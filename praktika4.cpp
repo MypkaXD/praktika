@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <initializer_list>
 
 #define size_t int
@@ -55,12 +55,12 @@ public:
 		T& operator*() {
 			return *m_ptr;
 		}
-		bool operator!=(const iterator& other) {
-			return (m_ptr != other.m_ptr);
-		}
-		bool operator==(const iterator& other) {
-			return (m_ptr == other.m_ptr);
-		}
+		//bool operator!=(const iterator& other) {
+		//	return (m_ptr != other.m_ptr);
+		//}
+		//bool operator==(const iterator& other) {
+		//	return (m_ptr == other.m_ptr);
+		//}
 		bool operator<(const iterator& other) {
 			if (m_ptr < other.m_ptr) return true;
 			else return false;
