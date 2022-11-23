@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <initializer_list>
 
 #define size_t int
@@ -15,18 +15,28 @@ class List {
 	Node* m_first = nullptr;
 public:
 	List() {}
-	//explicit List(const size_t size) {
-	//	for (size_t count = 0; count < size; ++count) {
-	//		m_first = new Node();
-	//	
-	//	}
-	//}
+	explicit List(const size_t size) {
+		if (size == 0)
+			return;
+		if (size < 0)
+			throw ("ERROR: SIZE SHOULD BE GRERATER THAN ZERO");
+		m_first = new Node();
+		Node* temp = m_first;
+		for (size_t count = 1; count < size; ++count) {
+			temp->m_next = new Node();
+			temp = temp->m_next;
+		}
+	}
+	explicit List(const T elem) {
+		m_first = new Node(elem);
+		Node* temp = m_first;
+	}
 	List(size_t size,T elem) {
 		if (size == 0)
 			return;
 		m_first = new Node(elem);
 		Node* temp = m_first;
-		for (size_t count = 0; count < size; count++) {
+		for (size_t count = 1; count < size; count++) {
 			temp->m_next = new Node(elem);
 			temp = temp->m_next;
 		}
@@ -35,22 +45,16 @@ public:
 	size_t size() {
 		Node* temp = m_first;
 		size_t count = 0;
-		//temp = temp->m_next;
 		while (temp) {
-			//if (temp->m_next == nullptr)
-			//	return count;
-			count++;
 			temp = temp->m_next;
+			count++;
 		}
 		return count;
 	}
 
 	void print() {
 		Node* temp = m_first;
-		//temp = temp->m_next;
 		while (temp) {
-			//if (temp->m_next == nullptr)
-			//	break;
 			std::cout << temp->m_elem << "\t";
 			temp = temp->m_next;
 		}
@@ -59,9 +63,17 @@ public:
 
 int main() {
 
-	List<int> list(9,2);
-	list.print();
+	List<int> list1(10,2);
+	list1.print();
 	
-	std::cout << list.size() << std::endl;
+	std::cout << list1.size() << std::endl;
+
+	List<int> list2(14);
+	list2.print();
+	std::cout << list2.size() << std::endl;
+
+	List<int> list3(13);
+	list3.print();
+	std::cout << list3.size() << std::endl;
 	return 0;
 }
