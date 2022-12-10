@@ -5,6 +5,7 @@
 
 template <class T>
 class List {
+private:
 	struct Node {
 		T m_elem = T(); // элемент 
 		Node* m_next = nullptr; // указатель на следующий элемент
@@ -20,6 +21,45 @@ class List {
 	};
 	Node* m_first = nullptr;
 public:
+	class iterator {
+	private:
+		Node* m_ptr = nullptr;
+	public:
+		iterator(Node* ptr) : m_ptr(ptr) {}
+		iterator(const iterator& other) : m_ptr(other.m_ptr) {}
+		~iterator() {
+			m_ptr = nullptr;
+		}
+		iterator& operator=(const iterator& other) {
+			m_ptr = other.m_ptr;
+			return *this;
+		}
+
+		iterator& operator++() {
+			m_ptr = m_ptr->m_next;
+			return *this;
+		}
+		iterator operator++(int) {
+			iterator temp = m_ptr;
+			m_ptr += 1;
+			return temp;
+		}
+		iterator operator+(size_t n) { // двигает не на ++ а на больше
+			iterator temp = m_ptr;
+			for (size_t count = 0; count < n; ++count)
+				temp = temp->m_next;
+			return temp;
+		}
+		T& operator*() {
+			return *m_ptr;
+		}
+		friend bool operator!=(const iterator& first, const iterator& second) {
+			return (first.m_ptr != second.m_ptr);
+		}
+		friend bool operator==(const iterator& first, const iterator& second) {
+			return !(second == first);
+		}
+	};
 	List() {}
 	explicit List(const size_t size) {
 		if (size == 0)
@@ -46,13 +86,17 @@ public:
 	//List(const T& elem) {
 	//	m_first = new Node(elem);
 	//}
-	List(const List<T>& other) {
+	List(List<T>& other) {
 		delete[] m_first;
 		m_first = new Node(other.m_first->m_elem);
 		Node* temp = m_first;
-		for (size_t count = 1; count < other.size(); count++) { // есть ли другой способ? типо for (size_t count = 1; other.m_first->m_next!=nullptr; count++)???
-			temp->m_next = new Node(other.m_first->m_elem);
+		Node* hope = other.m_first;
+		hope = hope->m_next;
+		iterator count = other.begin();
+		for (++count; count != other.end(); ++count) {
+			temp->m_next = new Node(hope->m_elem);
 			temp = temp->m_next;
+			hope = hope->m_next;
 		}
 	}
 	List(const std::initializer_list<T>& list) {
@@ -72,33 +116,34 @@ public:
 			temp = temp2;
 		}
 	}
-	List& operator=(const List& other) {
+	List& operator=(List& other) {
 		if (this == &other)
 			return *this;
 		delete[] m_first;
 		m_first = new Node(other.m_first->m_elem);
 		Node* temp1 = m_first;
 		Node* temp2 = other.m_first->m_next;
-		for (size_t count = 1; count < other.size(); ++count) {
+		iterator count = other.begin();
+		for (++count; count != other.end(); ++count) {
 			temp1->m_next = new Node(temp2->m_elem);
 			temp1 = temp1->m_next;
 			temp2 = temp2->m_next;
 		}
 		return *this;
 	}
-	const size_t size() const noexcept {
+	size_t size() {
 		Node* temp = m_first;
-		size_t count = 0;
-		while (temp) {
+		size_t lenght = 0;
+		for (iterator count = begin(); temp!=nullptr; ++count){
+			lenght++;
 			temp = temp->m_next;
-			count++;
 		}
-		return count;
+		return lenght;
 	}
 
 	void print() {
 		Node* temp = m_first;
-		while (temp) {
+		for (iterator count = begin(); count != end(); ++count) {
 			std::cout << temp->m_elem << "\t";
 			temp = temp->m_next;
 		}
@@ -117,18 +162,19 @@ public:
 		m_first = temp1;
 	}
 
-	void merge(const List& other) {
+	void merge(List& other) {
 		if (size() + other.size() == 0) return;
 		Node* result = new Node(m_first->m_elem);
 		Node* temp = result;
 		Node* tempHop = m_first->m_next;
-		for (size_t count = 1; count < size(); ++count) {
+		iterator count = begin();
+		for (++count; count != end(); ++count) {
 			temp->m_next = new Node(tempHop->m_elem);
 			temp = temp->m_next;
 			tempHop = tempHop->m_next;
 		}
 		tempHop = other.m_first;
-		for (size_t count = 0; count < other.size(); ++count) {
+		for (iterator count = other.begin(); count != other.end(); ++count) {
 			temp->m_next = new Node(tempHop->m_elem);
 			temp = temp->m_next;
 			tempHop = tempHop->m_next;
@@ -162,9 +208,25 @@ public:
 		m_first = temp1;
 		m_first->m_next = temp2;
 	}
+
+	iterator begin() {
+		return iterator(m_first);
+	}
+	iterator end() {
+		Node* temp = m_first;
+		for (size_t count = 0; count < size(); ++count) {
+			temp = temp->m_next;
+		}
+		return iterator(temp);
+	}
 };
 
 int main() {
+
+	List<int> l1({ 1,2,3 });
+	List<int> l2({ 45,432,12 });
+	l1.merge(l2);
+	l1.print();
 	/*
 	List<int> l1({ 1,2,3 });
 	l1.push_front(10);
