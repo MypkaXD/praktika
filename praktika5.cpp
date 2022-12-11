@@ -23,6 +23,7 @@ private:
 public:
 	class iterator {
 	private:
+		friend class List;
 		Node* m_ptr = nullptr;
 	public:
 		iterator(Node* ptr) : m_ptr(ptr) {}
@@ -51,7 +52,7 @@ public:
 			return temp;
 		}
 		T& operator*() {
-			return *m_ptr;
+			return m_ptr->m_elem;
 		}
 		friend bool operator!=(const iterator& first, const iterator& second) {
 			return (first.m_ptr != second.m_ptr);
@@ -83,10 +84,7 @@ public:
 			temp = temp->m_next;
 		}
 	}
-	//List(const T& elem) {
-	//	m_first = new Node(elem);
-	//}
-	List(List<T>& other) {
+	List(const List<T>& other) {
 		delete[] m_first;
 		m_first = new Node(other.m_first->m_elem);
 		Node* temp = m_first;
@@ -108,6 +106,10 @@ public:
 			temp = temp->m_next;
 		}
 	}
+	List(List&& other) noexcept{
+		m_first = nullptr;
+		std::swap(m_first, other.m_first);
+	}
 	~List() {
 		Node* temp = m_first;
 		while (temp) {
@@ -116,7 +118,7 @@ public:
 			temp = temp2;
 		}
 	}
-	List& operator=(List& other) {
+	const List& operator=(const List& other) {
 		if (this == &other)
 			return *this;
 		delete[] m_first;
@@ -129,6 +131,12 @@ public:
 			temp1 = temp1->m_next;
 			temp2 = temp2->m_next;
 		}
+		return *this;
+	}
+	const List& operator=(List&& other) noexcept{
+		if (this == &other)
+			return *this;
+		std::swap(m_first, other.m_first);
 		return *this;
 	}
 	size_t size() {
@@ -162,7 +170,7 @@ public:
 		m_first = temp1;
 	}
 
-	void merge(List& other) {
+	void merge(const List& other) {
 		if (size() + other.size() == 0) return;
 		Node* result = new Node(m_first->m_elem);
 		Node* temp = result;
@@ -183,16 +191,11 @@ public:
 	}
 
 	const bool empty() const noexcept {
-		return !size();
+		//return !size();
+		if (m_first == nullptr)
+			return true;
+		else return false;
 	}
-
-	//void clear() {
-	//	Node* temp = m_first;
-	//	delete[] m_first;
-	//	for (size_t count 0; count < size(); ++count) {
-	//
-	//	}
-	//}
 
 	void pop_front() {
 		if (m_first == nullptr)
@@ -209,6 +212,48 @@ public:
 		m_first->m_next = temp2;
 	}
 
+	void assign(iterator first, iterator last) {
+		Node* temp = m_first;
+		while (temp) {
+			Node* temp2 = temp->m_next;
+			delete[] temp;
+			temp = temp2;
+		}
+		m_first = new Node(*first);
+		Node* list = m_first;
+		for (++first; first != last; ++first) {
+			list->m_next = new Node(*first);
+			list = list->m_next;
+		}
+	}
+
+	void clear() {
+		if (empty()) throw ("ERROR: list is empty");
+
+		Node* temp1 = m_first;
+		Node* temp2;
+		while (temp1->m_next) {
+			temp2 = temp1->m_next;
+			delete temp1;
+			temp1 = temp2;
+		}
+		m_first = nullptr;
+	}
+
+	iterator insert_after(iterator prev, T value) {
+		Node* temp = new Node(value);
+		temp->m_next = prev.m_ptr->m_next;
+		prev.m_ptr->m_next = temp;
+		return iterator(temp);
+	}
+	iterator erase_after(iterator prev) {
+		Node* temp1 = prev.m_ptr;
+		Node* temp2 = temp1->m_next;
+		temp1->m_next = temp2->m_next;
+		delete[] temp2;
+		return iterator(temp1->m_next);
+	}
+
 	iterator begin() {
 		return iterator(m_first);
 	}
@@ -219,65 +264,18 @@ public:
 		}
 		return iterator(temp);
 	}
+	const iterator begin() const {
+		return iterator(m_first);
+	}
+	const iterator end() const {
+		Node* temp = m_first;
+		for (size_t count = 0; count < size(); ++count) {
+			temp = temp->m_next;
+		}
+		return iterator(temp);
+	}
 };
 
 int main() {
-
-	List<int> l1({ 1,2,3 });
-	List<int> l2({ 45,432,12 });
-	l1.merge(l2);
-	l1.print();
-	/*
-	List<int> l1({ 1,2,3 });
-	l1.push_front(10);
-	l1.print();
-	std::cout << std::endl;
-	l1.flip();
-	l1.print();
-	std::cout << std::endl;
-	l1.pop_front();
-	l1.print();
-	std::cout << std::endl;
-	l1.flip();
-	l1.print();
-	std::cout << std::endl;
-	l1.push_front(10);
-	std::cout << std::endl;
-	l1.print();
-	*/
-	/*
-	
-	List<int> l2({ 5,4,56 });
-
-	List<int> l3;
-	l3 = l2;
-	l3.print();
-	l3 = l3;
-	l3.print();
-	std::cout << std::endl;
-	l1.merge(l2);
-	l1.print();
-	*/
-
-
-	/*
-	List<int> list1(10, 2);
-	list1.print();
-
-	std::cout << list1.size() << std::endl;
-
-	List<int> list2(14);
-	list2.print();
-	std::cout << list2.size() << std::endl;
-
-	List<int> list3(list1);
-	list3.print();
-	std::cout << list3.size() << std::endl;
-
-	List<int> list4({ 1,2,3 });
-	list4.print();
-	std::cout << list4.size() << std::endl;
-	*/
-
 	return 0;
 }
